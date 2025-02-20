@@ -1,0 +1,24 @@
+[gd_scene load_steps=4 format=3 uid="uid://d31lsbprgepm"]
+
+[ext_resource type="Script" path="res://bulit.gd" id="1_vplxe"]
+[ext_resource type="Texture2D" uid="uid://kwb2y20bk8vh" path="res://slamfa-ideation.png" id="2_rqxte"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_ioacs"]
+size = Vector2(1, 1)
+
+[node name="bulit" type="Node2D"]
+position = Vector2(75, 108)
+script = ExtResource("1_vplxe")
+
+[node name="spr2" type="Sprite2D" parent="."]
+texture = ExtResource("2_rqxte")
+hframes = 10
+vframes = 10
+frame = 49
+
+[node name="bulletzone" type="Area2D" parent="."]
+collision_layer = 16
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="bulletzone"]
+shape = SubResource("RectangleShape2D_ioacs")
