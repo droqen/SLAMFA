@@ -20,6 +20,7 @@ func retreat_aniindex(force_step : bool = false) -> void:
 		$TileMapLayer.set_cell(Vector2i(x,0), 0, Vector2i(3+aniindex,0))
 	if aniindex == 3 or force_step:
 		position.y -= 1
+		play_line_sound()
 		
 func advance_aniindex(force_step : bool = false) -> void:
 	aniindex = (aniindex + 1) % 4
@@ -27,6 +28,8 @@ func advance_aniindex(force_step : bool = false) -> void:
 		$TileMapLayer.set_cell(Vector2i(x,0), 0, Vector2i(3+aniindex,0))
 	if aniindex == 0 or force_step:
 		position.y += 1
+		if force_step:
+			play_line_sound(-5)
 
 func _physics_process(_delta: float) -> void:
 	subindex += 1
@@ -43,3 +46,9 @@ func flash_white() -> void:
 	for x in range(16):
 		$TileMapLayer.set_cell(Vector2i(x,0), 0, Vector2i(7,0))
 	subindex = 5
+	%soundboss.play_nodoubling("hum").pitch_scale = 3.0 - .14 * sqrt(max(0,position.y))
+
+func play_line_sound(db:float=0.0):
+	var hum = %soundboss.play_nodoubling("hum")
+	hum.pitch_scale = 2.0 - .16 * sqrt(max(0,position.y))
+	hum.volume_db = db

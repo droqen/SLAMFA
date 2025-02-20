@@ -36,6 +36,7 @@ func _physics_process(_delta: float) -> void:
 		$spr.frame = 50 + ani
 func hurt() -> void:
 	if $spr.frame < 60:
+		%soundboss.play("ouchrival").pitch_scale = randf_range(0.9,1.1) + (10-damage) * 0.1
 		$spr.frame = 61
 		await get_tree().physics_frame
 		await get_tree().physics_frame

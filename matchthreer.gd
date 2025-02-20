@@ -5,6 +5,8 @@ extends Node2D
 @export var levels : Array[PackedScene]
 var levelindex : int = 0
 
+var lastlevel : bool = false
+
 func _ready() -> void:
 	for cell in maze.get_used_cells():
 		maze.set_cell(cell,0,Vector2i(0,0))
@@ -18,6 +20,20 @@ func _ready() -> void:
 var crushed : int = 0
 
 func _physics_process(_delta: float) -> void:
+	if lastlevel and $rivalguy.damage >= 10 and not $deadplayer.emitting:
+		
+		$guy.hide(); $guy.process_mode = Node.PROCESS_MODE_DISABLED
+		$bulits.removeallbullets()
+		
+		$rivalguy.hide(); $rivalguy.process_mode = Node.PROCESS_MODE_DISABLED
+		
+		$deadplayer.position = $rivalguy.position
+		$deadplayer.emitting = true
+		%soundboss.play("shipdie")
+		await $deadplayer.finished
+		if is_inside_tree():
+			get_tree().change_scene_to_file("res://gameover.tscn")
+	
 	if $guy.position.y - 3 < $deathline.position.y:
 		$deathline.flash_white()
 		$guy.vy = 1
@@ -31,6 +47,7 @@ func _physics_process(_delta: float) -> void:
 		$bulits.removeallbullets()
 		$deadplayer.position = $guy.position
 		$deadplayer.emitting = true
+		%soundboss.play("shipdie")
 		await $deadplayer.finished
 		if is_inside_tree():
 			get_tree().reload_current_scene()
@@ -38,6 +55,7 @@ func _physics_process(_delta: float) -> void:
 var populating : bool = false
 
 func empty_repopulate_screen() -> void:
+	if $deadplayer.emitting: return
 	if populating: return
 	populating = true
 	get_tree().paused = true
@@ -50,7 +68,12 @@ func empty_repopulate_screen() -> void:
 		await $deathline.cutscene_move_to_y(y*8)
 	$rivalguy.damage = 0
 	await populate_packedscene(levels[levelindex])
-	levelindex = (levelindex + 1) % len(levels)
+	get_tree().paused = true
+	%soundboss.play("intro")
+	await get_tree().create_timer(2.62).timeout
+	get_tree().paused = false
+	levelindex += 1
+	if levelindex >= len(levels): lastlevel = true
 	populating = false
 	# load new level
 

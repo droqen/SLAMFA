@@ -27,6 +27,7 @@ func _physics_process(_delta: float) -> void:
 		if firedbuf > 10: spr.frame = 58
 		else: spr.frame = 57
 	elif Input.is_action_pressed("ui_accept"):
+		%soundboss.play("pew")
 		spr.frame = 58
 		firedbuf = 16
 		for x in [-2,2]:

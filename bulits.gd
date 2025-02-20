@@ -17,21 +17,37 @@ func try_hit_cell(cell : Vector2i) -> bool:
 	match tid:
 		0: return false
 		10: pass # flash cell, destroy bullet
-		12,13,14: flash_set_tid(cell, tid+1)
-		2,15: flash_set_tid(cell, 0)
-		1: detonate_start(cell)
-		25: flash_set_tid(cell, 1)
-		11,21: flash_set_tid(cell, 11)
+		12,13,14:
+			%soundboss.play("plap").pitch_scale = 0.7 - 0.05 * (15-tid)
+			flash_set_tid(cell, tid+1)
+		2,15:
+			%soundboss.play("plap").pitch_scale = randf_range(0.7,1.3)
+			flash_set_tid(cell, 0)
+		1:
+			%soundboss.play("longboom")
+			detonate_start(cell)
+		25:
+			flash_set_tid(cell, 1)
+			%soundboss.play("harp")
+		11,21:
+			flash_set_tid(cell, 11)
+			%soundboss.play("hit")
 		22:
+			%soundboss.play("pushleft").pitch_scale = 0.7 + 0.05 * cell.x
+			%soundboss.play("pushright").pitch_scale = 0.7 + 0.05 * cell.x
 			flash_set_tid(cell, 0)
 			if cell.x > 0: flash_set_tid(cell+Vector2i.LEFT, 23)
 			if cell.x < 15: flash_set_tid(cell+Vector2i.RIGHT, 24)
 		23:
+			%soundboss.play("pushleft").pitch_scale = 0.7 + 0.05 * cell.x
 			flash_set_tid(cell, 0)
 			if cell.x > 0: flash_set_tid(cell+Vector2i.LEFT, 23)
+			else: %soundboss.play("plap").pitch_scale = randf_range(0.7,1.3)
 		24:
+			%soundboss.play("pushright").pitch_scale = 0.7 + 0.05 * cell.x
 			flash_set_tid(cell, 0)
 			if cell.x < 15: flash_set_tid(cell+Vector2i.RIGHT, 24)
+			else: %soundboss.play("plap").pitch_scale = randf_range(0.7,1.3)
 	return true
 
 func _request_extrahurty() -> void:
@@ -88,6 +104,7 @@ func detonate_start(cell:Vector2i)->void:
 	explosion.hide()
 
 func detonate_chain_reaction_cell(cell:Vector2i) -> void:
+	%soundboss.play("boomafterblip").pitch_scale = randf_range(0.5,2.0)
 	maze.set_cell(cell,0,Vector2i(0,2))
 	await get_tree().create_timer(0.05).timeout
 	for dx in [-1,0,1]:
