@@ -12,11 +12,28 @@ func _ready() -> void:
 	$bulits.screen_cleared.connect(empty_repopulate_screen)
 	#await $deathline.cutscene_move_to_y(72)
 	empty_repopulate_screen()
+	$deadplayer.emitting = false
+	$deadplayer.one_shot = true
+
+var crushed : int = 0
 
 func _physics_process(_delta: float) -> void:
 	if $guy.position.y - 3 < $deathline.position.y:
 		$deathline.flash_white()
 		$guy.vy = 1
+		if $guy.position.y > 120:
+			$guy.vy = remap($guy.position.y,120,125,1,0)
+			crushed += 4
+	if crushed > 0:
+		crushed -= 1
+	if crushed > 10 and $guy.visible:
+		$guy.hide(); $guy.process_mode = Node.PROCESS_MODE_DISABLED
+		$bulits.removeallbullets()
+		$deadplayer.position = $guy.position
+		$deadplayer.emitting = true
+		await $deadplayer.finished
+		if is_inside_tree():
+			get_tree().reload_current_scene()
 
 var populating : bool = false
 
@@ -24,7 +41,6 @@ func empty_repopulate_screen() -> void:
 	if populating: return
 	populating = true
 	get_tree().paused = true
-	$rivalguy.damage = 0
 	for child in $bulits.get_children():
 		child.queue_free()
 	var deathline_celly : int = maze.local_to_map($deathline.position).y
@@ -32,6 +48,7 @@ func empty_repopulate_screen() -> void:
 		for x in range(16):
 			maze.set_cell(Vector2i(x,y),0,Vector2i(0,0))
 		await $deathline.cutscene_move_to_y(y*8)
+	$rivalguy.damage = 0
 	await populate_packedscene(levels[levelindex])
 	levelindex = (levelindex + 1) % len(levels)
 	populating = false

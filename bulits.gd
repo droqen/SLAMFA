@@ -20,6 +20,18 @@ func try_hit_cell(cell : Vector2i) -> bool:
 		12,13,14: flash_set_tid(cell, tid+1)
 		2,15: flash_set_tid(cell, 0)
 		1: detonate_start(cell)
+		25: flash_set_tid(cell, 1)
+		11,21: flash_set_tid(cell, 11)
+		22:
+			flash_set_tid(cell, 0)
+			if cell.x > 0: flash_set_tid(cell+Vector2i.LEFT, 23)
+			if cell.x < 15: flash_set_tid(cell+Vector2i.RIGHT, 24)
+		23:
+			flash_set_tid(cell, 0)
+			if cell.x > 0: flash_set_tid(cell+Vector2i.LEFT, 23)
+		24:
+			flash_set_tid(cell, 0)
+			if cell.x < 15: flash_set_tid(cell+Vector2i.RIGHT, 24)
 	return true
 
 func _request_extrahurty() -> void:
@@ -43,6 +55,9 @@ func fire_bulit(position:Vector2)->void:
 	bulit.position = position
 	add_child(bulit)
 	bulit.owner = owner if owner else self
+
+func removeallbullets() -> void:
+	for child in get_children():child.queue_free()
 
 func read_tid(cell:Vector2i)->int:
 	var coords = maze.get_cell_atlas_coords(cell)
@@ -80,7 +95,8 @@ func detonate_chain_reaction_cell(cell:Vector2i) -> void:
 			if (dx==0)!=(dy==0):
 				var off = Vector2i(dx,dy)
 				match read_tid(cell+off):
-					0,10,20: pass
+					0: pass
+					10,20: guarantee_explode(cell)
 					_:
 						prints(cell,off,read_tid(cell+off))
 						detonate_chain_reaction_cell(cell+off)
@@ -88,3 +104,11 @@ func detonate_chain_reaction_cell(cell:Vector2i) -> void:
 	maze.set_cell(cell,0,Vector2i(0,1))
 	await get_tree().create_timer(0.05).timeout
 	maze.set_cell(cell,0,Vector2i(0,0))
+
+func guarantee_explode(cell:Vector2i) -> void:
+	for _i in range(5):
+		await get_tree().create_timer(0.05).timeout
+		match read_tid(cell):
+			0: return # done
+			10,20: continue
+			_: detonate_chain_reaction_cell(cell) # boom!

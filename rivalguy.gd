@@ -17,7 +17,8 @@ func _ready() -> void:
 	)
 func _physics_process(_delta: float) -> void:
 	if damage >= 10:
-		hurt()
+		if !get_tree().paused: hurt()
+		else: subani = 0
 		damage = 10
 	else:
 		phase += 0.01
@@ -43,3 +44,4 @@ func hurt() -> void:
 		damage += 1
 		if damage > 10:
 			extrahurty.emit()
+			subani = 7
